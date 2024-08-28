@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR with Chroma Key</title>
+
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="plugins/mindar-image.prod.js"></script>
+    <script src="plugins/mindar-image-aframe.prod.js"></script>
+    <!-- <script src="plugins/aframe-chromakey-material.min.js"></script> -->
+
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .example-container {
+            overflow: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        #example-scanning-overlay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 2;
+        }
+
+        @media (min-aspect-ratio: 1/1) {
+            #example-scanning-overlay .inner {
+                width: 50vh;
+                height: 50vh;
+            }
+        }
+
+        @media (max-aspect-ratio: 1/1) {
+            #example-scanning-overlay .inner {
+                width: 80vw;
+                height: 80vw;
+            }
+        }
+
+        #example-scanning-overlay .inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+
+            background:
+                linear-gradient(to right, white 10px, transparent 10px) 0 0,
+                linear-gradient(to right, white 10px, transparent 10px) 0 100%,
+                linear-gradient(to left, white 10px, transparent 10px) 100% 0,
+                linear-gradient(to left, white 10px, transparent 10px) 100% 100%,
+                linear-gradient(to bottom, white 10px, transparent 10px) 0 0,
+                linear-gradient(to bottom, white 10px, transparent 10px) 100% 0,
+                linear-gradient(to top, white 10px, transparent 10px) 0 100%,
+                linear-gradient(to top, white 10px, transparent 10px) 100% 100%;
+            background-repeat: no-repeat;
+            background-size: 40px 40px;
+        }
+
+        #example-scanning-overlay.hidden {
+            display: none;
+        }
+
+        #example-scanning-overlay img {
+            opacity: 0.6;
+            width: 90%;
+            align-self: center;
+        }
+
+        #example-scanning-overlay .inner .scanline {
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background: white;
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0%, 100% { top: 0% }
+            50% { top: calc(100% - 10px) }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="example-scanning-overlay" class="hidden">
+        <div class="inner">
+            <img src="old1.jpg" />
+            <div class="scanline"></div>
+        </div>
+    </div>
+
+    <a-scene mindar-image="imageTargetSrc: ty.mind; uiScanning: #example-scanning-overlay; filterMinCF: 0.05; warmupTolerance: 5; missTolerance: 100"
+        color-space="sRGB"
+        renderer="colorManagement: true;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <video id="vid" src="pritam.dutta_20240818_1.mp4" webkit-playsinline playsinline  crossorigin="anonymous" loop></video>
+            <video style="opacity: 0;" id="greenscreenvideo" src="wed v1.mp4" loop autoplay ></video>
+        </a-assets>
+
+        <a-camera position="0 0 2" look-controls="enabled: true" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable">
+            <a-entity id="targetAr" mindar-image-target="targetIndex: 0;">
+                <a-entity position="0 0 0">
+                    <!-- Plane with chroma keying -->
+                    <a-plane 
+                    material=" src: #greenscreenvideo; color: 0.1 0.9 0.2" 
+                    position="0 0 0" 
+                    height="0.5" 
+                    
+                    width="0.5" 
+                    rotation="0 0 0">
+                </a-plane>
+                    
+                   
++
+                       
+                </a-entity>
+            </a-entity>
+        </a-camera>
+    </a-scene>
+
+    <script>
+        // Detect target found
+        const targetAr = document.querySelector('#targetAr');
+    const vidEl = document.querySelector('#vid');
+    const greenscreenEl = document.querySelector('#greenscreenvideo');
+
+    targetAr.addEventListener("targetFound", event => {
+        console.log("target found");
+        vidEl.play();
+        greenscreenEl.play();
+    });
+
+    // Detect target lost
+    targetAr.addEventListener("targetLost", event => {
+        console.log("target lost");
+        vidEl.pause();
+        greenscreenEl.pause();
+    });
+    </script>
+</body>
+</html>
